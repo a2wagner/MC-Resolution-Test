@@ -4,18 +4,12 @@
 #include <iostream>
 #include <stdio.h>
 #include <math.h>
-#include <map>
 #include <errno.h>
 #include <string>
 
 #include <TROOT.h>
 #include <TFile.h>
 #include <TNtupleD.h>
-//#include <TLorentzVector.h>
-
-typedef std::map<const int, double> IDMap;
-typedef std::pair<const int, const double> IDPair;
-typedef std::map<const int, const double>::iterator IDIter;
 
 int main(int argc, char **argv)
 {
@@ -30,16 +24,16 @@ int main(int argc, char **argv)
 	} else if (argc == 2 || argc == 3) {
 		if (strstr(argv[1], "photon"))
 			id_part = photon;
-		else if (strstr(argv[1], "positron"))
-			id_part = positron;
+		else if (strstr(argv[1], "proton"))
+			id_part = proton;
 		else if (strstr(argv[1], "electron"))
 			id_part = electron;
+		else if (strstr(argv[1], "positron"))
+			id_part = positron;
 		else if (strstr(argv[1], "antimu"))
 			id_part = antimuon;
 		else if (strstr(argv[1], "muon"))
 			id_part = muon;
-		else if (strstr(argv[1], "proton"))
-			id_part = proton;
 		else {
 			fprintf(stderr, "[ERROR] Unknown particle \"%s\", will exit\n", argv[1]);
 			return 1;
@@ -60,20 +54,23 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	bool dbg = true;
+	bool dbg = false;
 
 	static const double PI = 3.141592653589793;
 	static const double MASS_PROTON = 938.272;
 	static const double MASS_ELECTRON = .5109989;
 	static const double MASS_MUON = 105.65837;
 
-	IDMap mass;
-	mass.insert(IDPair(photon, 0.));
-	mass.insert(IDPair(positron, MASS_ELECTRON));
-	mass.insert(IDPair(electron, MASS_ELECTRON));
-	mass.insert(IDPair(muon, MASS_MUON));
-	mass.insert(IDPair(antimuon, MASS_MUON));
-	mass.insert(IDPair(proton, MASS_PROTON));
+	// set particle mass [GeV]
+	double m;
+	if (id_part == proton)
+		m = MASS_PROTON/1000.;
+	else if (id_part == electron || id_part == positron)
+		m = MASS_ELECTRON/1000.;
+	else if (id_part == muon || id_part == antimuon)
+		m = MASS_MUON/1000.;
+	else
+		m = 0.;
 
 	int n_part = 1;  // number of particle(s)
 	char var_names[128];
@@ -101,7 +98,7 @@ int main(int argc, char **argv)
 
 	//TLorentzVector p;
 	double st, sp, ct, cp;
-	double px, py, pz, pt;
+	double px, py, pz, pt, en;
 	//Double_t buffer[8 + 5*n_part];  // 8 parameters for vertex (3) and beam (5) + 5 parameters per particle (px, py, pz, pt, e)
 	Double_t* buffer;
 	buffer = (Double_t*)malloc((8 + 5*n_part)*sizeof(Double_t));
@@ -132,16 +129,21 @@ int main(int argc, char **argv)
 				sp = sin(p);
 				ct = cos(t);
 				cp = cos(p);
-				px = e*st*cp;
-				py = e*st*sp;
-				pz = e*ct;
-				pt = e;
+				px = st*cp;
+				py = st*sp;
+				pz = ct;
+				if (id_part == photon)
+					en = pt = e;
+				else {
+					en = e;  // e total energy, kinetic + m
+					pt = sqrt(e*e - m*m);
+				}
 
 				buffer[8] = px;
 				buffer[9] = py;
 				buffer[10] = pz;
 				buffer[11] = pt;
-				buffer[12] = e;
+				buffer[12] = en;
 //TODO: phi unnötig? (symmetrisch); z vertex uniform verteilen -> theta resolution; andere teilchen hinzufügen, masse etc berücksichtigen (proton, elektron, ...)
 				for (unsigned int i = 0; i < count; i++) {
 					tpl.Fill(buffer);
@@ -154,7 +156,7 @@ int main(int argc, char **argv)
 	}
 
 	// write the event ntuple to the output file
-	printf("\n\n[INFO] Writing to %s . . .\n", f.GetName());
+	printf("\n[INFO] Writing to %s . . .\n", f.GetName());
 	printf("[INFO]    => %d events\n", n_events);
 	tpl.Write();
 	// close file and free memory
