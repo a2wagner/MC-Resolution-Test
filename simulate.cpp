@@ -75,6 +75,7 @@ int main(int argc, char **argv)
 	int n_part = 1;  // number of particle(s)
 	char var_names[128];
 
+	// values for the simulated ranges which should be changed!
 	double start_energy = /*.8*/1.4, end_energy = 1.604, step_energy = .0005;  // GeV
 	double start_theta = /*0.*/PI-.2, end_theta = PI, step_theta = PI/360.;  //radians, half a degree step size
 	double start_phi = /*0.*/PI-.2, end_phi = 2*PI, step_phi = PI/360.;
@@ -103,7 +104,7 @@ int main(int argc, char **argv)
 	Double_t* buffer;
 	buffer = (Double_t*)malloc((8 + 5*n_part)*sizeof(Double_t));
 	//memset(buffer, 0, (8 + 5*n_part)*sizeof(Double_t));
-	unsigned int n_events = 0;
+	unsigned long long int n_events = 0;
 	// write vertex and beam information (fixed values) to array
 	/**buffer++ = x_vtx;
 	*buffer++ = y_vtx;
@@ -157,7 +158,7 @@ int main(int argc, char **argv)
 
 	// write the event ntuple to the output file
 	printf("\n[INFO] Writing to %s . . .\n", f.GetName());
-	printf("[INFO]    => %d events\n", n_events);
+	printf("[INFO]     =>  %llu events\n", n_events);
 	tpl.Write();
 	// close file and free memory
 	f.Close();
