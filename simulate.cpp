@@ -10,7 +10,7 @@
 
 #include <TROOT.h>
 #include <TFile.h>
-#include <TNtuple.h>
+#include <TNtupleD.h>
 //#include <TLorentzVector.h>
 
 typedef std::map<const int, double> IDMap;
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "[ERROR] Can't create file %s: %s\n", name, strerror(errno));
 		exit(1);
 	}
-	TNtuple tpl("h1", "mkin MC file", var_names);
+	TNtupleD tpl("h1", "mkin MC file", var_names);
 	if (dbg) {
 		tpl.Print();
 		std::cout << "#args: " << tpl.GetNvar() << std::endl;
@@ -102,10 +102,10 @@ int main(int argc, char **argv)
 	//TLorentzVector p;
 	double st, sp, ct, cp;
 	double px, py, pz, pt;
-	//Float_t buffer[8 + 5*n_part];  // 8 parameters for vertex (3) and beam (5) + 5 parameters per particle (px, py, pz, pt, e)
-	Float_t* buffer;
-	buffer = (Float_t*)malloc((8 + 5*n_part)*sizeof(Float_t));
-	//memset(buffer, 0, (8 + 5*n_part)*sizeof(Float_t));
+	//Double_t buffer[8 + 5*n_part];  // 8 parameters for vertex (3) and beam (5) + 5 parameters per particle (px, py, pz, pt, e)
+	Double_t* buffer;
+	buffer = (Double_t*)malloc((8 + 5*n_part)*sizeof(Double_t));
+	//memset(buffer, 0, (8 + 5*n_part)*sizeof(Double_t));
 	unsigned int n_events = 0;
 	// write vertex and beam information (fixed values) to array
 	/**buffer++ = x_vtx;
