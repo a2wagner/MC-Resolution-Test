@@ -54,12 +54,21 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	bool dbg = false;
-
 	static const double PI = 3.141592653589793;
 	static const double MASS_PROTON = 938.272;
 	static const double MASS_ELECTRON = .5109989;
 	static const double MASS_MUON = 105.65837;
+
+	/*
+	 * Important!
+	 * Values for the simulated ranges and statistics which should be changed!
+	 */
+	double start_energy = /*.8*/1.4, end_energy = 1.604, step_energy = .0005;  // GeV
+	double start_theta = /*0.*/PI-.2, end_theta = PI, step_theta = PI/360.;  //radians, half a degree step size
+	double start_phi = /*0.*/PI-.2, end_phi = 2*PI, step_phi = PI/360.;
+	const int unsigned count = 1;  // number of particles per step
+
+	bool dbg = false;
 
 	// set particle mass [GeV]
 	double m;
@@ -75,15 +84,11 @@ int main(int argc, char **argv)
 	int n_part = 1;  // number of particle(s)
 	char var_names[128];
 
-	// values for the simulated ranges which should be changed!
-	double start_energy = /*.8*/1.4, end_energy = 1.604, step_energy = .0005;  // GeV
-	double start_theta = /*0.*/PI-.2, end_theta = PI, step_theta = PI/360.;  //radians, half a degree step size
-	double start_phi = /*0.*/PI-.2, end_phi = 2*PI, step_phi = PI/360.;
-	const int unsigned count = 1;  // number of particles per step
-
+	// vertex and beam information
 	const double x_vtx = 0., y_vtx = 0., px_bm = 0., py_bm = 0., pz_bm = 1.;
 	double z_vtx = 0., pt_bm = .1, en_bm = .1;  // 100 MeV beam, just an arbitrary value [GeV]
 
+	// names for the branches
 	sprintf(var_names, "X_vtx:Y_vtx:Z_vtx:Px_bm:Py_bm:Pz_bm:Pt_bm:En_bm:Px_l%02d%02d:Py_l%02d%02d:Pz_l%02d%02d:Pt_l%02d%02d:En_l%02d%02d",
 		n_part, id_part, n_part, id_part, n_part, id_part, n_part, id_part, n_part, id_part);
 	TFile f(name, "RECREATE");
@@ -97,7 +102,6 @@ int main(int argc, char **argv)
 		std::cout << "#args: " << tpl.GetNvar() << std::endl;
 	}
 
-	//TLorentzVector p;
 	double st, sp, ct, cp;
 	double px, py, pz, pt, en;
 	//Double_t buffer[8 + 5*n_part];  // 8 parameters for vertex (3) and beam (5) + 5 parameters per particle (px, py, pz, pt, e)
@@ -149,7 +153,7 @@ int main(int argc, char **argv)
 				for (unsigned int i = 0; i < count; i++) {
 					tpl.Fill(buffer);
 					n_events++;
-					if (n_events % 1000000 == 0)
+					if (n_events % 10000000 == 0 || (n_events < 10000000 && n_events % 1000000 == 0))
 						std::cout << "[INFO] Created " << n_events/1000000 << "M events" << std::endl;
 				}
 			}
