@@ -68,8 +68,9 @@ int main(int argc, char **argv)
 	double start_theta = /*0.*/PI-.2, end_theta = PI, step_theta = PI/360.;  //radians, half a degree step size
 	double start_phi = /*0.*/PI-.2, end_phi = 2*PI, step_phi = PI/360.;
 	const int unsigned count = 1;  // number of particles per step
-	// should the z vertex be randomized regarding to the target length?
+	// should the z vertex be randomized regarding to the target length? if yes, change target length accordingly [cm]
 	bool vtx = true;
+	const double target_length = 10.;
 	// print more information
 	bool dbg = false;
 	/*
@@ -165,7 +166,7 @@ int main(int argc, char **argv)
 				for (unsigned int i = 0; i < count; i++) {
 					// change Z vertex randomly based on a uniform distribution over the target length
 					if (vtx)
-						buffer[2] = rand.Uniform(-5., 5.);
+						buffer[2] = target_length * rand.Uniform(-.5, .5);
 					tpl.Fill(buffer);
 					n_events++;
 					if (n_events % 10000000 == 0 || (n_events < 10000000 && n_events % 1000000 == 0))
