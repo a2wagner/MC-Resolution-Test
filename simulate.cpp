@@ -10,6 +10,7 @@
 #include <TROOT.h>
 #include <TFile.h>
 #include <TNtupleD.h>
+#include <TRandom3.h>
 
 int main(int argc, char **argv)
 {
@@ -67,8 +68,13 @@ int main(int argc, char **argv)
 	double start_theta = /*0.*/PI-.2, end_theta = PI, step_theta = PI/360.;  //radians, half a degree step size
 	double start_phi = /*0.*/PI-.2, end_phi = 2*PI, step_phi = PI/360.;
 	const int unsigned count = 1;  // number of particles per step
-
+	// should the z vertex be randomized regarding to the target length?
+	bool vtx = true;
+	// print more information
 	bool dbg = false;
+	/*
+	 * End of simulation specific user modifications
+	 */
 
 	// set particle mass [GeV]
 	double m;
@@ -102,6 +108,9 @@ int main(int argc, char **argv)
 		std::cout << "#args: " << tpl.GetNvar() << std::endl;
 	}
 
+	// random number generator
+	TRandom3 rand(0);
+
 	double st, sp, ct, cp;
 	double px, py, pz, pt, en;
 	//Double_t buffer[8 + 5*n_part];  // 8 parameters for vertex (3) and beam (5) + 5 parameters per particle (px, py, pz, pt, e)
@@ -130,6 +139,9 @@ int main(int argc, char **argv)
 	for (double e = start_energy; e < end_energy; e += step_energy) {
 		for (double t = start_theta; t <= end_theta; t += step_theta) {
 			for (double p = start_phi; p <= end_phi; p += step_phi) {
+			//TODO: Phi symmetric -> randomize uniformly?
+			// Or use amount of particles per step for phi loop to have all possible phi values, even for low count values:
+			// step_phi = (end_phi - start_phi)/count; for (as above)
 				st = sin(t);
 				sp = sin(p);
 				ct = cos(t);
@@ -149,8 +161,11 @@ int main(int argc, char **argv)
 				buffer[10] = pz;
 				buffer[11] = pt;
 				buffer[12] = en;
-//TODO: phi unnötig? (symmetrisch); z vertex uniform verteilen -> theta resolution; andere teilchen hinzufügen, masse etc berücksichtigen (proton, elektron, ...)
+
 				for (unsigned int i = 0; i < count; i++) {
+					// change Z vertex randomly based on a uniform distribution over the target length
+					if (vtx)
+						buffer[2] = rand.Uniform(-5., 5.);
 					tpl.Fill(buffer);
 					n_events++;
 					if (n_events % 10000000 == 0 || (n_events < 10000000 && n_events % 1000000 == 0))
