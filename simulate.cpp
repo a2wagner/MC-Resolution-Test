@@ -71,11 +71,19 @@ int main(int argc, char **argv)
 	// should the z vertex be randomized regarding to the target length? if yes, change target length accordingly [cm]
 	bool vtx = true;
 	const double target_length = 10.;
+	// should the x and y vertex be randomized ragarding the beam spot diameter? if yes, specify diameter accordingly [cm]
+	const double beam_diameter = 2.;
 	// print more information
 	bool dbg = false;
 	/*
 	 * End of simulation specific user modifications
 	 */
+
+	// print vertex infos if they get randomized
+	if (vtx)
+		printf("[INFO] Z vertex will be uniformly distributed within %2.1fcm target length\n", target_length);
+	if (beam_diameter > 0.)
+		printf("[INFO] X, y vertex will be uniformly distributed within beam spot of %.1fcm diameter\n", beam_diameter);
 
 	// set particle mass [GeV]
 	double m;
@@ -92,8 +100,8 @@ int main(int argc, char **argv)
 	char var_names[128];
 
 	// vertex and beam information
-	const double x_vtx = 0., y_vtx = 0., px_bm = 0., py_bm = 0., pz_bm = 1.;
-	double z_vtx = 0., pt_bm = .1, en_bm = .1;  // 100 MeV beam, just an arbitrary value [GeV]
+	const double px_bm = 0., py_bm = 0., pz_bm = 1.;
+	double x_vtx = 0., y_vtx = 0., z_vtx = 0., pt_bm = .1, en_bm = .1;  // 100 MeV beam, just an arbitrary value [GeV]
 
 	// names for the branches
 	sprintf(var_names, "X_vtx:Y_vtx:Z_vtx:Px_bm:Py_bm:Pz_bm:Pt_bm:En_bm:Px_l%02d%02d:Py_l%02d%02d:Pz_l%02d%02d:Pt_l%02d%02d:En_l%02d%02d",
@@ -137,7 +145,8 @@ int main(int argc, char **argv)
 	buffer[6] = pt_bm;
 	buffer[7] = en_bm;
 
-	for (double e = start_energy; e < end_energy; e += step_energy) {
+	//TODO: energy and theta correlated, no big theta AND high energy -> check exclusion region, maybe calc. kinematically, add condition to skip unphysical region to save computation time
+	for (double e = start_energy; e <= end_energy; e += step_energy) {
 		for (double t = start_theta; t <= end_theta; t += step_theta) {
 			for (double p = start_phi; p <= end_phi; p += step_phi) {
 			//TODO: Phi symmetric -> randomize uniformly?
@@ -167,6 +176,18 @@ int main(int argc, char **argv)
 					// change Z vertex randomly based on a uniform distribution over the target length
 					if (vtx)
 						buffer[2] = target_length * rand.Uniform(-.5, .5);
+					// set x, y vertex position randomly based on a uniform distribution
+					if (beam_diameter > 0.) {
+						x_vtx = y_vtx = 10.;
+						// randomize the x and y vertex position within the beam spot
+						while (x_vtx*x_vtx + y_vtx*y_vtx > beam_diameter*beam_diameter/4.) {
+							x_vtx = beam_diameter * rand.Uniform(-.5, .5);
+							y_vtx = beam_diameter * rand.Uniform(-.5, .5);
+						}
+						buffer[0] = x_vtx;
+						buffer[1] = y_vtx;
+					}
+
 					tpl.Fill(buffer);
 					n_events++;
 					if (n_events % 10000000 == 0 || (n_events < 10000000 && n_events % 1000000 == 0))
