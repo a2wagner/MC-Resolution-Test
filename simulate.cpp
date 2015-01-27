@@ -9,7 +9,7 @@
 
 #include <TROOT.h>
 #include <TFile.h>
-#include <TNtupleD.h>
+#include <TNtuple.h>
 #include <TRandom3.h>
 
 int main(int argc, char **argv)
@@ -111,7 +111,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, "[ERROR] Can't create file %s: %s\n", name, strerror(errno));
 		exit(1);
 	}
-	TNtupleD tpl("h1", "mkin MC file", var_names);
+	TNtuple tpl("h1", "mkin MC file", var_names);
 	if (dbg) {
 		tpl.Print();
 		std::cout << "#args: " << tpl.GetNvar() << std::endl;
@@ -123,9 +123,9 @@ int main(int argc, char **argv)
 	double st, sp, ct, cp;
 	double px, py, pz, pt, en;
 	//Double_t buffer[8 + 5*n_part];  // 8 parameters for vertex (3) and beam (5) + 5 parameters per particle (px, py, pz, pt, e)
-	Double_t* buffer;
-	buffer = (Double_t*)malloc((8 + 5*n_part)*sizeof(Double_t));
-	//memset(buffer, 0, (8 + 5*n_part)*sizeof(Double_t));
+	Float_t* buffer;
+	buffer = (Float_t*)malloc((8 + 5*n_part)*sizeof(Float_t));
+	//memset(buffer, 0, (8 + 5*n_part)*sizeof(Float_t));
 	unsigned long long int n_events = 0;
 	// write vertex and beam information (fixed values) to array
 	/**buffer++ = x_vtx;
