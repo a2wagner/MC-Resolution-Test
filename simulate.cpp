@@ -64,9 +64,9 @@ int main(int argc, char **argv)
 	 * Important!
 	 * Values for the simulated ranges and statistics which should be changed!
 	 */
-	double start_energy = /*.8*/1.4, end_energy = 1.604, step_energy = .0005;  // GeV
-	double start_theta = /*0.*/PI-.2, end_theta = PI, step_theta = PI/360.;  //radians, half a degree step size
-	double start_phi = /*0.*/PI-.2, end_phi = 2*PI, step_phi = PI/360.;
+	double start_energy = .8, end_energy = 1.604, step_energy = .0005;  // GeV
+	double start_theta = 0., end_theta = PI, step_theta = PI/360.;  //radians, half a degree step size
+	double start_phi = 0., end_phi = 2*PI, step_phi = PI/360.;
 	const int unsigned count = 1;  // number of particles per step
 	// should the z vertex be randomized regarding to the target length? if yes, change target length accordingly [cm]
 	bool vtx = true;
@@ -122,20 +122,12 @@ int main(int argc, char **argv)
 
 	double st, sp, ct, cp;
 	double px, py, pz, pt, en;
-	//Double_t buffer[8 + 5*n_part];  // 8 parameters for vertex (3) and beam (5) + 5 parameters per particle (px, py, pz, pt, e)
+	// allocate memory for event information, 8 parameters for vertex (3) and beam (5) + 5 parameters per particle (px, py, pz, pt, e)
 	Float_t* buffer;
 	buffer = (Float_t*)malloc((8 + 5*n_part)*sizeof(Float_t));
 	//memset(buffer, 0, (8 + 5*n_part)*sizeof(Float_t));
 	unsigned long long int n_events = 0;
 	// write vertex and beam information (fixed values) to array
-	/**buffer++ = x_vtx;
-	*buffer++ = y_vtx;
-	*buffer++ = z_vtx;
-	*buffer++ = px_bm;
-	*buffer++ = py_bm;
-	*buffer++ = pz_bm;
-	*buffer++ = pt_bm;
-	*buffer++ = en_bm;*/
 	buffer[0] = x_vtx;
 	buffer[1] = y_vtx;
 	buffer[2] = z_vtx;
@@ -145,13 +137,9 @@ int main(int argc, char **argv)
 	buffer[6] = pt_bm;
 	buffer[7] = en_bm;
 
-	//TODO: energy and theta correlated, no big theta AND high energy -> check exclusion region, maybe calc. kinematically, add condition to skip unphysical region to save computation time
 	for (double e = start_energy; e <= end_energy; e += step_energy) {
 		for (double t = start_theta; t <= end_theta; t += step_theta) {
 			for (double p = start_phi; p <= end_phi; p += step_phi) {
-			//TODO: Phi symmetric -> randomize uniformly?
-			// Or use amount of particles per step for phi loop to have all possible phi values, even for low count values:
-			// step_phi = (end_phi - start_phi)/count; for (as above)
 				st = sin(t);
 				sp = sin(p);
 				ct = cos(t);
